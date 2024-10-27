@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-exporter-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-exporter
+  template:
+    metadata:
+      labels:
+        app: custom-exporter
+    spec:
+      containers:
+      - name: custom-exporter
+        image: myapp-exporter:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 2112
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: custom-exporter-service
+spec:
+  type: NodePort
+  ports:
+    - port: 2112
+      targetPort: 2112
+      nodePort: 30001
+  selector:
+    app: custom-exporter

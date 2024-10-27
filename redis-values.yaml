@@ -1,0 +1,17 @@
+usePassword: false
+
+master:
+  persistence:
+    enabled: false
+  service:
+    type: ClusterIP
+
+replica:
+  replicaCount: 1
+  persistence:
+    enabled: false
+  service:
+    type: ClusterIP
+
+metrics:
+  enabled: true

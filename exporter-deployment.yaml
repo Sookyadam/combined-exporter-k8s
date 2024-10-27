@@ -14,10 +14,16 @@ spec:
     spec:
       containers:
       - name: custom-exporter
-        image: myapp-exporter:latest
+        image: custom-exporter:2
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 2112
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
 ---
 apiVersion: v1
 kind: Service

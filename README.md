@@ -16,6 +16,6 @@ kubectl create secret generic redis-secret --from-literal=redis-password=<redis-
 
 helm repo add grafana https://grafana.github.io/helm-charts
 helm install grafana grafana/grafana --set persistence.enabled=false
-
+ aaaa
 
 ```

@@ -14,4 +14,4 @@ replica:
     type: ClusterIP
 
 metrics:
-  enabled: true
+  enabled: false

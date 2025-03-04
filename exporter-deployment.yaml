@@ -14,17 +14,17 @@ spec:
     spec:
       serviceAccountName: exporter-service-account
       containers:
-      - name: custom-exporter
-        image: custom-exporter:4
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 2112
-        env:
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: redis-secret
-              key: redis-password
+        - name: custom-exporter
+          image: custom-exporter:7
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 2112
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: redis-password
 ---
 apiVersion: v1
 kind: Service
@@ -50,17 +50,17 @@ kind: ClusterRole
 metadata:
   name: exporter-cluster-role
 rules:
-- apiGroups: [""]
-  resources:
-  - pods
-  - nodes
-  - events
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["metrics.k8s.io"]
-  resources:
-  - pods
-  - nodes
-  verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources:
+      - pods
+      - nodes
+      - events
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - pods
+      - nodes
+    verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -71,6 +71,6 @@ roleRef:
   kind: ClusterRole
   name: exporter-cluster-role
 subjects:
-- kind: ServiceAccount
-  name: exporter-service-account
-  namespace: default
+  - kind: ServiceAccount
+    name: exporter-service-account
+    namespace: default

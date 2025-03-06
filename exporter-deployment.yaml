@@ -15,7 +15,7 @@ spec:
       serviceAccountName: exporter-service-account
       containers:
         - name: custom-exporter
-          image: custom-exporter:7
+          image: custom-exporter:10
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 2112

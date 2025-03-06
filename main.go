@@ -29,119 +29,119 @@ var (
 	redisMemUsage = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_memory_usage_bytes", // TODO fix 0 values
-			Help: "Current memory usage in bytes by Redis",
+			Help: "Current memory usage in bytes by Redis (Bytes). This includes all memory allocations by Redis.",
 		},
 	)
 	connectedClients = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_connected_clients",
-			Help: "Number of clients connected to Redis",
+			Help: "Number of clients connected to Redis (Count). This indicates the number of active connections.",
 		},
 	)
 	cacheHitRate = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_cache_hit_rate",
-			Help: "Cache hit rate of Redis.",
+			Help: "Cache hit rate of Redis (Ratio). This is the ratio of successful key lookups to total key lookups.",
 		},
 	)
 	evictedKeys = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_evicted_keys",
-			Help: "Number of keys evicted due to memory pressure.",
+			Help: "Number of keys evicted due to memory pressure (Count). This indicates how many keys were removed to free up memory.",
 		},
 	)
 	expiredKeys = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_expired_keys",
-			Help: "Number of keys that have expired.",
+			Help: "Number of keys that have expired (Count). This indicates how many keys have reached their expiration time.",
 		},
 	)
 	keyspaceHits = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_keyspace_hits",
-			Help: "Number of successful key lookups.",
+			Help: "Number of successful key lookups (Count). This indicates how many times a key was found in the database.",
 		},
 	)
 	keyspaceMisses = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_keyspace_misses",
-			Help: "Number of failed key lookups.",
+			Help: "Number of failed key lookups (Count). This indicates how many times a key was not found in the database.",
 		},
 	)
 	totalCommandsProcessed = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_total_commands_processed",
-			Help: "Total number of commands processed by the server.",
+			Help: "Total number of commands processed by the server (Count). This indicates the total workload handled by Redis.",
 		},
 	)
 	instantaneousOpsPerSec = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_instantaneous_ops_per_sec",
-			Help: "Number of commands processed per second.",
+			Help: "Number of commands processed per second (Ops/Sec). This indicates the current throughput of Redis.",
 		},
 	)
 	replicationLag = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_replication_lag",
-			Help: "Lag between master and replica nodes.",
+			Help: "Lag between master and replica nodes (Milliseconds). This indicates the delay in data replication.",
 		},
 	)
 	connectedSlaves = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_connected_slaves",
-			Help: "Number of connected replicas.",
+			Help: "Number of connected replicas (Count). This indicates how many replica nodes are connected to the master.",
 		},
 	)
 	blockedClients = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_blocked_clients",
-			Help: "Number of clients waiting for blocking commands.",
+			Help: "Number of clients waiting for blocking commands (Count). This indicates how many clients are waiting for a blocking operation to complete.",
 		},
 	)
 	rssMemoryUsage = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_rss_memory_usage_bytes",
-			Help: "RSS memory usage in bytes by Redis.",
+			Help: "RSS (Resident Set Size) memory usage in bytes by Redis (Bytes). This indicates the amount of memory occupied by Redis in RAM.",
 		},
 	)
 	memoryFragmentationRatio = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_memory_fragmentation_ratio",
-			Help: "Memory fragmentation ratio of Redis.",
+			Help: "Memory fragmentation ratio of Redis (Ratio). This indicates the ratio of memory allocated by Redis to the memory actually used.",
 		},
 	)
 	latency = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_latency_seconds",
-			Help: "Latency of Redis in seconds.",
+			Help: "Latency of Redis in seconds (Seconds). This indicates the time taken to process a command.",
 		},
 	)
 	//! Kubernetes metrics
 	podCPUUsage = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "pod_cpu_usage_cores", // TODO fix 0 values, and rename to pod_cpu_usage_millicores, and convert to millicores, see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu
-			Help: "Current CPU usage of the pod in cores.",
+			Help: "Current CPU usage of the pod in cores (Cores). This indicates the amount of CPU resources used by the pod.",
 		},
 		[]string{"pod", "namespace"},
 	)
 	podMemoryUsage = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "pod_memory_usage_bytes",
-			Help: "Current memory usage of the pod in bytes.",
+			Help: "Current memory usage of the pod in bytes (Bytes). This indicates the amount of memory used by the pod.",
 		},
 		[]string{"pod", "namespace"},
 	)
 	podStatus = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "pod_status", // TODO fix -1, 0 values are not showing up in Prometheus, even when forced recreate in lens see https://prometheus.io/docs/practices/naming/#metric-names
-			Help: "Current status of the pod: Running=1, Pending=0, Failed=-1.",
+			Help: "Current status of the pod: Running=1, Pending=0, Failed=-1 (Status). This indicates the current state of the pod.",
 		},
 		[]string{"pod", "namespace"},
 	)
 	podEventWarnings = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "pod_event_warnings",
-			Help: "Count of warning or error events for the pod.",
+			Help: "Count of warning or error events for the pod (Count). This indicates the number of warning or error events associated with the pod.",
 		},
 		[]string{"pod", "namespace"},
 	)

@@ -201,15 +201,15 @@ func recordRedisMetrics() {
 			continue
 		}
 
-		//* Latency
+		/* Latency
 		latencyInfo, err := redisClient.Info(ctx, "latency").Result()
 		if err != nil {
 			log.Printf("Error getting Redis latency info: %v", err)
 			continue
 		}
+		*/
 
 		redisMemUsage.Set(parseMemoryUsage(info))
-		latency.Set(parseLatency(latencyInfo))
 		connectedClients.Set(parseConnectedClients(clientInfo))
 		// * New Redis metrics
 		cacheHitRate.Set(parseCacheHitRate(stats))
@@ -221,10 +221,10 @@ func recordRedisMetrics() {
 		instantaneousOpsPerSec.Set(parseInstantaneousOpsPerSec(stats))
 		replicationLag.Set(parseReplicationLag(stats))
 		connectedSlaves.Set(parseConnectedSlaves(stats))
-		blockedClients.Set(parseBlockedClients(clientInfo))
-		rssMemoryUsage.Set(parseRSSMemoryUsage(info))
-		memoryFragmentationRatio.Set(parseMemoryFragmentationRatio(info))
-		latency.Set(parseLatency(latencyInfo))
+		blockedClients.Set(parseBlockedClients(stats))
+		rssMemoryUsage.Set(parseRSSMemoryUsage(stats))
+		memoryFragmentationRatio.Set(parseMemoryFragmentationRatio(stats))
+		latency.Set(parseLatency(stats))
 
 		time.Sleep(10 * time.Second)
 	}
@@ -244,13 +244,13 @@ func parseMemoryUsage(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing used_memory: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("used_memory not found in Redis memory info")
-	return 0.2
+	return 0.0
 }
 
 func parseConnectedClients(info string) float64 {
@@ -267,13 +267,13 @@ func parseConnectedClients(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing connected_clients: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("connected_clients not found in Redis client info")
-	return 0.2
+	return 0.0
 }
 
 func updatePodResourceMetrics(metricsClient *metricsv.Clientset, podName, namespace string) {
@@ -303,12 +303,12 @@ func updatePodStatus(kubeClient *kubernetes.Clientset, podName, namespace string
 	   ! 0 for Pending.
 	   ! -1 for Failed.
 	*/
-	status := 0.2
+	status := 0.0
 	switch pod.Status.Phase {
 	case corev1.PodRunning:
 		status = 1.0
 	case corev1.PodFailed:
-		status = 0.2
+		status = 0.0
 	}
 
 	podStatus.WithLabelValues(podName, namespace).Set(status)
@@ -323,7 +323,7 @@ func updatePodEventWarnings(kubeClient *kubernetes.Clientset, podName, namespace
 		return
 	}
 
-	warningCount := 0.2
+	warningCount := 0.0
 	for _, event := range events.Items {
 		if event.Type == "Warning" || event.Type == "Error" {
 			warningCount++
@@ -337,7 +337,7 @@ func parseResourceQuantity(quantity resource.Quantity) float64 {
 	value, ok := quantity.AsInt64()
 	if !ok {
 		log.Printf("Error converting resource quantity: %v", quantity)
-		return 0.2
+		return 0.0
 	}
 	return float64(value)
 }
@@ -352,7 +352,7 @@ func parseCacheHitRate(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing keyspace_hits: %v", err)
-				return 0.2
+				return 0.0
 			}
 			hits = value
 		}
@@ -362,13 +362,13 @@ func parseCacheHitRate(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing keyspace_misses: %v", err)
-				return 0.2
+				return 0.0
 			}
 			misses = value
 		}
 	}
 	if hits+misses == 0 {
-		return 0.2
+		return 0.0
 	}
 	return hits / (hits + misses)
 }
@@ -382,13 +382,13 @@ func parseEvictedKeys(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing evicted_keys: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("evicted_keys not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseExpiredKeys(info string) float64 {
@@ -400,13 +400,13 @@ func parseExpiredKeys(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing expired_keys: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("expired_keys not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseKeyspaceHits(info string) float64 {
@@ -418,13 +418,13 @@ func parseKeyspaceHits(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing keyspace_hits: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("keyspace_hits not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseKeyspaceMisses(info string) float64 {
@@ -436,13 +436,13 @@ func parseKeyspaceMisses(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing keyspace_misses: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("keyspace_misses not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseTotalCommandsProcessed(info string) float64 {
@@ -454,13 +454,13 @@ func parseTotalCommandsProcessed(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing total_commands_processed: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("total_commands_processed not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseInstantaneousOpsPerSec(info string) float64 {
@@ -472,13 +472,13 @@ func parseInstantaneousOpsPerSec(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing instantaneous_ops_per_sec: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("instantaneous_ops_per_sec not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseReplicationLag(info string) float64 {
@@ -490,13 +490,13 @@ func parseReplicationLag(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing master_repl_offset: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("master_repl_offset not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseConnectedSlaves(info string) float64 {
@@ -508,13 +508,13 @@ func parseConnectedSlaves(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing connected_slaves: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("connected_slaves not found in Redis stats info")
-	return 0.2
+	return 0.0
 }
 
 func parseBlockedClients(info string) float64 {
@@ -526,13 +526,13 @@ func parseBlockedClients(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing blocked_clients: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("blocked_clients not found in Redis client info")
-	return 0.2
+	return 0.0
 }
 
 func parseRSSMemoryUsage(info string) float64 {
@@ -544,13 +544,13 @@ func parseRSSMemoryUsage(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing used_memory_rss: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("used_memory_rss not found in Redis memory info")
-	return 0.2
+	return 0.0
 }
 
 func parseMemoryFragmentationRatio(info string) float64 {
@@ -562,31 +562,47 @@ func parseMemoryFragmentationRatio(info string) float64 {
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
 				log.Printf("Error parsing mem_fragmentation_ratio: %v", err)
-				return 0.2
+				return 0.0
 			}
 			return value
 		}
 	}
 	log.Println("mem_fragmentation_ratio not found in Redis memory info")
-	return 0.2
+	return 0.0
 }
 
 func parseLatency(info string) float64 {
+	var eventloopDurationSum, eventloopCycles float64
+
 	lines := strings.Split(info, "\n")
 	for _, line := range lines {
-		if strings.HasPrefix(line, "latency:") {
-			valueStr := strings.TrimPrefix(line, "latency:")
+		if strings.HasPrefix(line, "eventloop_duration_sum:") {
+			valueStr := strings.TrimPrefix(line, "eventloop_duration_sum:")
 			valueStr = strings.TrimSpace(valueStr)
 			value, err := strconv.ParseFloat(valueStr, 64)
 			if err != nil {
-				log.Printf("Error parsing latency: %v", err)
-				return 0.2
+				log.Printf("Error parsing eventloop_duration_sum: %v", err)
+				return 0.0
 			}
-			return value
+			eventloopDurationSum = value
+		}
+		if strings.HasPrefix(line, "eventloop_cycles:") {
+			valueStr := strings.TrimPrefix(line, "eventloop_cycles:")
+			valueStr = strings.TrimSpace(valueStr)
+			value, err := strconv.ParseFloat(valueStr, 64)
+			if err != nil {
+				log.Printf("Error parsing eventloop_cycles: %v", err)
+				return 0.0
+			}
+			eventloopCycles = value
 		}
 	}
-	log.Println("latency not found in Redis latency info")
-	return 0.2
+	if eventloopDurationSum == 0 || eventloopCycles == 0 {
+		log.Println("Could not find valid event loop metrics.")
+		return 0.0
+	}
+	instanceLatency := eventloopDurationSum / eventloopCycles
+	return instanceLatency / 1000
 }
 
 func homeDir() string {

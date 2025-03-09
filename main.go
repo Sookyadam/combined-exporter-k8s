@@ -86,6 +86,12 @@ var (
 			Help: "Lag between master and replica nodes (Milliseconds). This indicates the delay in data replication.",
 		},
 	)
+	masterLinkStatus = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "redis_master_link_status",
+			Help: "Indicates whether the master-replica link is up (1) or down (0).",
+		},
+	)
 	connectedSlaves = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_connected_slaves",
@@ -158,6 +164,7 @@ func init() {
 	prometheus.MustRegister(totalCommandsProcessed)
 	prometheus.MustRegister(instantaneousOpsPerSec)
 	prometheus.MustRegister(replicationLag)
+	prometheus.MustRegister(masterLinkStatus)
 	prometheus.MustRegister(connectedSlaves)
 	prometheus.MustRegister(blockedClients)
 	prometheus.MustRegister(rssMemoryUsage)
@@ -193,7 +200,13 @@ func recordRedisMetrics() {
 		} else {
 			log.Printf("Redis client info: %s", clientInfo)
 		}
-
+		replicationInfo, err := redisClient.Info(ctx, "replication").Result()
+		if err != nil {
+			log.Printf("Error getting Redis client info: %v", err)
+			continue
+		} else {
+			log.Printf("Redis client info: %s", replicationInfo)
+		}
 		//* Cache hit rate, evicted keys, expired keys, keyspace hits and misses, total commands processed, instantaneous ops per sec, replication lag, connected slaves
 		stats, err := redisClient.Info(ctx, "default").Result()
 		if err != nil {
@@ -220,6 +233,7 @@ func recordRedisMetrics() {
 		totalCommandsProcessed.Set(parseTotalCommandsProcessed(stats))
 		instantaneousOpsPerSec.Set(parseInstantaneousOpsPerSec(stats))
 		replicationLag.Set(parseReplicationLag(stats))
+		masterLinkStatus.Set(parseMasterLinkStatus(replicationInfo))
 		connectedSlaves.Set(parseConnectedSlaves(stats))
 		blockedClients.Set(parseBlockedClients(stats))
 		rssMemoryUsage.Set(parseRSSMemoryUsage(stats))
@@ -496,6 +510,24 @@ func parseReplicationLag(info string) float64 {
 		}
 	}
 	log.Println("master_repl_offset not found in Redis stats info")
+	return 0.0
+}
+
+func parseMasterLinkStatus(info string) float64 {
+	lines := strings.Split(info, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "master_link_status:") {
+			valueStr := strings.TrimPrefix(line, "master_link_status:")
+			valueStr = strings.TrimSpace(valueStr)
+
+			if valueStr == "up" {
+				return 1.0 //! Master link is active
+			} else if valueStr == "down" {
+				return 0.0 //! Master link is down
+			}
+		}
+	}
+	log.Println("master_link_status not found in Redis replication info")
 	return 0.0
 }
 

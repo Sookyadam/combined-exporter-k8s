@@ -83,7 +83,7 @@ var (
 	replicationLag = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "redis_replication_lag",
-			Help: "Lag between master and replica nodes (Milliseconds). This indicates the delay in data replication.",
+			Help: "Lag between master and replica nodes (Milliseconds). This indicates the delay in data replication.", // TODO fix incorrect implemantion logic off scrapping the value, the goal is to get how many bites does the replica is behind the master in bytes! Conjuction with the master_repl_offset and the slave_repl_offset.
 		},
 	)
 	masterLinkStatus = prometheus.NewGauge(
